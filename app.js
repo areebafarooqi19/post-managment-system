@@ -7,7 +7,7 @@ const userRoute = require('./src/routes/user.route');
 const authRoute = require('./src/routes/auth.route');
 const supportRouter = require('./src/routes/support.route');
 const postRouter = require('./src/routes/post.route');
-const connectCloudinary = require('./src/middleware/upload');
+const connectCloudinary = require('./src/config/cloudinary');
 const app = express();
 
 const support = require('./utils/support');
@@ -16,6 +16,8 @@ dotenv.config();
 //Connect Database
 connectDb();
 
+//cloud clodinary
+connectCloudinary();
 //cookie-parser
 app.use(cookieParser());
 

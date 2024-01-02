@@ -13,10 +13,7 @@ const postScehma = mongoose.Schema({
     type: String,
     require: false,
   },
-  post_others: {
-    type: String,
-    require: false,
-  },
+  post_image: {},
   created_at: {
     type: Date,
     require: Date.now(),
@@ -27,4 +24,4 @@ const postScehma = mongoose.Schema({
   },
 });
 
-modeule.exports = mongoose.model('Post', postScehma);
+module.exports = mongoose.model('Post', postScehma);
