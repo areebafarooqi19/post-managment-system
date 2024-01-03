@@ -22,6 +22,26 @@ const postScehma = mongoose.Schema({
     type: Date,
     require: Date.now(),
   },
+  likes: {
+    type: Number,
+    default: 0,
+  },
+  dislikes: {
+    type: Number,
+    default: 0,
+  },
+  likedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'user',
+    },
+  ],
+  disLikedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'user',
+    },
+  ],
 });
 
 module.exports = mongoose.model('Post', postScehma);
