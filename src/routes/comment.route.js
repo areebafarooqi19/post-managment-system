@@ -4,5 +4,7 @@ const commentSchema = require('../controller/comment.controller');
 
 Router.post('/:postId/:userId', commentSchema.addComment);
 Router.delete('/:id', commentSchema.deleteComment);
+Router.get('/:postId', commentSchema.getComments);
+Router.patch('/:postId', commentSchema.updateComment);
 
 module.exports = Router;

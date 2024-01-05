@@ -42,6 +42,10 @@ const postScehma = mongoose.Schema({
       ref: 'user',
     },
   ],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+  },
 });
 
 module.exports = mongoose.model('Post', postScehma);

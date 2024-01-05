@@ -9,9 +9,12 @@ const commentSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'post',
   },
-  userId: {
+  created_by: {
     type: mongoose.Schema.Types.ObjectId,
     res: 'user',
+  },
+  created_at: {
+    type: Date,
   },
 });
 

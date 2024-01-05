@@ -12,7 +12,7 @@ const signUp = async (req, res) => {
   const { email, password } = req.body;
 
   if (!(email && password)) {
-    res.send({
+    return res.send({
       status: 404,
       message: 'Missing Required field',
     });
@@ -78,19 +78,22 @@ const signIn = async (req, res) => {
           });
         }
       } else {
-        res.send({
+        return res.send({
           status: 404,
           message: 'Password Incoorect',
         });
       }
     } else {
-      res.send({
+      return res.send({
         status: 404,
         message: 'User not exist',
       });
     }
   } catch (error) {
-    console.log(error);
+    return res.send({
+      status: 500,
+      message: 'User not exist',
+    });
   }
 };
 const signOut = (req, res) => {
@@ -136,6 +139,7 @@ const forgotPassword = async (req, res) => {
           { email: email },
           {
             $set: {
+              updated_at: Date.now(),
               reset_password_token: null,
               reset_password_expiry_date: null,
             },
@@ -187,7 +191,7 @@ const resetPassword = async (req, res) => {
       $set: {
         password: hashPassword,
         reset_password_token: null,
-
+        updated_at: Date.now(),
         reset_password_expiry_date: null,
       },
     }

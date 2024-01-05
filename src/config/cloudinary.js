@@ -6,7 +6,6 @@ const connectCloudinary = async () => {
     api_secret: 'EevkAvQTQHehYoQ5XaPwkn0pLgE',
     secure: true,
   });
-  console.log('n');
 };
 
 module.exports = connectCloudinary;
