@@ -1,10 +1,11 @@
 const cloudinary = require('cloudinary');
+const dotenv = require('dotenv');
 const connectCloudinary = async () => {
   await cloudinary.v2.config({
-    cloud_name: 'dr0irtvmr',
-    api_key: '931523722458625',
-    api_secret: 'EevkAvQTQHehYoQ5XaPwkn0pLgE',
-    secure: true,
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+    secure: process.env.SECURE,
   });
 };
 

@@ -9,10 +9,7 @@ const postScehma = mongoose.Schema({
     type: String,
     require: true,
   },
-  post_background: {
-    type: String,
-    require: false,
-  },
+
   post_image: {},
   created_at: {
     type: Date,

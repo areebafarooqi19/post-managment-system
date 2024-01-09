@@ -2,14 +2,13 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 var randomstring = require('randomstring');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 const { sendResetPasswordMail } = require('../../utils/email');
-const saltRounds = process.env.HASH_SALT || 10;
 const userModel = require('../model/user.model');
 const { error } = require('console');
+const saltRounds = process.env.HASH_SALT || 10;
+const SECRET_KEY = process.env.SECRET_KEY;
 const signUp = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, first_name, last_name } = req.body;
 
   if (!(email && password)) {
     return res.send({
@@ -20,6 +19,8 @@ const signUp = async (req, res) => {
   const hashPassword = await bcrypt.hash(password, saltRounds);
 
   const newUser = {
+    first_name,
+    last_name,
     email,
     password: hashPassword,
     is_admin: false,
@@ -29,7 +30,7 @@ const signUp = async (req, res) => {
     {
       user,
     },
-    'secret',
+    SECRET_KEY,
     { expiresIn: '1h' }
   );
 
@@ -67,7 +68,7 @@ const signIn = async (req, res) => {
           {
             user,
           },
-          'secret',
+          SECRET_KEY,
           { expiresIn: '1h' }
         );
         if (token) {
@@ -96,70 +97,70 @@ const signIn = async (req, res) => {
     });
   }
 };
-const signOut = (req, res) => {
-  console.log('signOut');
-};
 
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
-  if (!email) {
-    res.send({
-      status: 404,
-      message: 'Missing Required field',
-    });
-  }
-  const user = await userModel.findOne({ email: email });
-  if (user) {
-    //token generate
-    const resetToken = randomstring.generate(32);
+  try {
+    if (!email) {
+      return res.send({
+        status: 404,
+        message: 'Missing Required field',
+      });
+    }
 
-    console.log('====================================', resetToken);
-    // const hashToken = crypto
-    //   .createHash('sha256')
-    //   .update(resetToken)
-    //   .digest('hex');
-    const resetTokenExpire = Date.now() + 10 * 60 * 1000;
+    const user = await userModel.findOne({ email: email });
 
-    const updateData = await userModel.updateOne(
-      { email: email },
-      {
-        $set: {
-          reset_password_token: resetToken,
-          reset_password_expiry_date: resetTokenExpire,
-        },
-      }
-    );
-    console.log(updateData);
-    try {
-      const mailAcknowlege = await sendResetPasswordMail(email, resetToken);
-    } catch {
-      console.log('error', error);
+    if (user) {
+      //token generate
+      const resetToken = randomstring.generate(32);
+
+      const resetTokenExpire = Date.now() + 10 * 60 * 1000;
+
+      await userModel.updateOne(
+        { email: email },
+        {
+          $set: {
+            updated_at: Date.now(),
+            reset_password_token: resetToken,
+            reset_password_expiry_date: resetTokenExpire,
+          },
+        }
+      );
+
       try {
-        const a = await userModel.updateOne(
+        await sendResetPasswordMail(email, resetToken);
+        return res.send({
+          status: 200,
+          message: 'Email send',
+        });
+      } catch {
+        await userModel.updateOne(
           { email: email },
           {
             $set: {
-              updated_at: Date.now(),
               reset_password_token: null,
               reset_password_expiry_date: null,
             },
           }
         );
-        console.log('done', a);
-      } catch (error) {
-        console.log(error);
+
+        return res.send({
+          status: 500,
+          message: 'Email not send',
+          error,
+        });
       }
+    } else {
+      return res.send({
+        status: 404,
+        message: 'User not exist',
+      });
     }
-    // if (mailAcknowlege.response.includes("OK")) {
-
-    // }
-
-    console.log(`${req.protocol}//${req.get('host')}/reset-password`);
-    //updateData
-  } else {
-    res.send({
-      status: 404,
-      message: 'User not exist',
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: 'Something wents wrong',
+      error: error,
     });
   }
 };
@@ -168,41 +169,52 @@ const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password, confirmPassword } = req.body;
   if (password !== confirmPassword) {
-    console.log('Password not match');
-    // res.send('Password not match');
+    return res.send({
+      status: 404,
+      message: 'Password not match',
+    });
   }
-
-  //const hashToken = crypto.createHash('sha256').update(token).digest('hex');
-  //console.log('hashtoken', hashToken);
-  const user = await userModel.findOne({
-    reset_password_token: token,
-    // reset_password_expiry_date: { $gt: Date.now() },
-  });
-  if (!user) {
-    console.log('Token is invalid or expires');
-  }
-  console.log('old ata', user);
-  const hashPassword = await bcrypt.hash(password, saltRounds);
-  console.log('pnew assowrd', password);
-  console.log('new token saved', hashPassword);
-  const updateData = await userModel.updateOne(
-    { email: user.email },
-    {
-      $set: {
-        password: hashPassword,
-        reset_password_token: null,
-        updated_at: Date.now(),
-        reset_password_expiry_date: null,
-      },
+  try {
+    const user = await userModel.findOne({
+      reset_password_token: token,
+    });
+    if (!user) {
+      return res.send({
+        status: 404,
+        message: 'Token is invalid',
+      });
     }
-  );
-  console.log('password updated', updateData);
+
+    const hashPassword = await bcrypt.hash(password, saltRounds);
+
+    const updateData = await userModel.updateOne(
+      { email: user.email },
+      {
+        $set: {
+          password: hashPassword,
+          reset_password_token: null,
+          updated_at: Date.now(),
+          reset_password_expiry_date: null,
+        },
+      }
+    );
+    res.send({
+      status: 200,
+      message: 'Password updated',
+      user: updateData,
+    });
+  } catch (error) {
+    return res.send({
+      status: 500,
+      message: 'Something wents wrong',
+      error,
+    });
+  }
 };
 
 module.exports = {
   signUp,
   signIn,
-  signOut,
   forgotPassword,
   resetPassword,
 };

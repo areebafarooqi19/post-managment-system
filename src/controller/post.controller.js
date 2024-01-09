@@ -111,7 +111,7 @@ const getPostByUser = async (req, res) => {
     return res.status(200).send('No Post Available');
   } catch (error) {
     console.log('Error', error);
-    res.status(400).send('Something wents wrong');
+    return res.status(400).send('Something wents wrong');
   }
 };
 

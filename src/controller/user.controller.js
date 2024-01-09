@@ -6,7 +6,7 @@ const deletetUser = async (req, res) => {
 
   try {
     const deleteUser = await userModel.deleteOne({ _id: id });
-    console.log(deleteUser);
+
     await postModel.deleteMany({
       likedBy: id,
       $pull: { likedBy: id },

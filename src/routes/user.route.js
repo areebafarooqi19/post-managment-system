@@ -6,8 +6,12 @@ const postController = require('../controller/post.controller');
 
 // verify.verifyToken
 //testing
-router.delete('/:id', userController.deletetUser);
-router.get('/:id/posts', postController.getPostByUser);
-router.get('/:userId/posts/:id', postController.getPostDetailById);
+router.delete('/:id', verify.verifyAdmin, userController.deletetUser);
+router.get('/:id/posts', verify.verifyAdmin, postController.getPostByUser);
+router.get(
+  '/:userId/posts/:id',
+  verify.verifyAdmin,
+  postController.getPostDetailById
+);
 
 module.exports = router;

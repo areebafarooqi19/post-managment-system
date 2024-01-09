@@ -1,34 +1,34 @@
+const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
+//configDotenv;
 const sendResetPasswordMail = async (email, token) => {
-  console.log(process.env.USER_EMAIL);
   try {
     const smtpConfig = {
-      service: 'gmail',
-      host: 'smtp.gmail.com',
-      port: 587,
+      service: processs.env.EMAIL_SERVICE,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_POST,
 
       auth: {
-        user: 'areebafarooqi19@gmail.com',
-        pass: 'vzog wheh wgov kvuq',
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_PASSWORD,
       },
-      // auth: {
-      //   // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-      //   user: 'areebafarooqi1998@gmail.com',
-      //   pass: 'hamza0404',
-      // },
     };
+
     var transporter = nodemailer.createTransport(smtpConfig);
-    const resetLink = `http://localhost:5000/reset-password/${token}`;
+    const resetLink = `${req.protocol}//${req.get(
+      'host'
+    )}/reset-password/${token}`;
     const mailOption = {
-      from: 'areebafarooqi19@gmail.com',
+      from: process.env.USER_EMAIL,
       to: email,
       subject: 'Reset Password',
-      html: `<p> Hi, Please click this link and</p> <a href=${resetLink}>Reset Your Password</a>`,
+      html: `Hi, Please click this link and <a href=${resetLink}>Reset Your Password</a>`,
     };
 
     return await transporter.sendMail(mailOption);
   } catch (error) {
-    console.log(error);
+    console.log(error, error);
+    return error;
   }
 };
 module.exports = {
